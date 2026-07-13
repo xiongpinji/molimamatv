@@ -38,6 +38,122 @@ async def _update_canvas_generation_later(generation_id, final_payload, *, final
 
 class TestCanvasDocumentApi:
     @pytest.mark.asyncio
+    async def test_debug_image_dispatch_runs_without_celery_backend(self):
+        from src.api.v1.canvas import dispatch_canvas_image_generation
+
+        with (
+            patch("src.core.config.settings.DEBUG", True),
+            patch(
+                "src.services.canvas.CanvasGenerationService.process_image_generation",
+                new_callable=AsyncMock,
+            ) as process_generation,
+            patch(
+                "src.api.v1.canvas.generate_canvas_image.delay",
+                side_effect=AssertionError("Celery must not be used in debug mode"),
+            ),
+        ):
+            task_id = dispatch_canvas_image_generation("generation-1")
+            await asyncio.sleep(0.05)
+
+        assert task_id.startswith("local-")
+        process_generation.assert_awaited_once_with("generation-1")
+
+    @pytest.mark.asyncio
+    async def test_debug_dispatch_retains_running_local_task(self):
+        from src.api.v1 import canvas as canvas_api
+
+        release = asyncio.Event()
+
+        async def wait_for_release(_service, _generation_id):
+            await release.wait()
+
+        with (
+            patch("src.core.config.settings.DEBUG", True),
+            patch(
+                "src.services.canvas.CanvasGenerationService.process_image_generation",
+                new=wait_for_release,
+            ),
+        ):
+            canvas_api.dispatch_canvas_image_generation("generation-2")
+            await asyncio.sleep(0.05)
+            assert len(canvas_api._local_generation_tasks) == 1
+            release.set()
+            await asyncio.sleep(0.05)
+
+        assert not canvas_api._local_generation_tasks
+
+    @pytest.mark.asyncio
+    async def test_lite_snapshot_without_media_does_not_initialize_storage(self, client, auth_headers):
+        create_response = await client.post(
+            "/api/v1/canvas-documents",
+            headers=auth_headers,
+            json={"title": "Text-only Canvas"},
+        )
+        canvas_id = create_response.json()["id"]
+
+        item_response = await client.post(
+            f"/api/v1/canvas-documents/{canvas_id}/items",
+            headers=auth_headers,
+            json={
+                "item_type": "text",
+                "title": "Plain text",
+                "position_x": 0,
+                "position_y": 0,
+                "width": 360,
+                "height": 220,
+                "z_index": 1,
+                "content": {"text": "No media fields"},
+                "generation_config": {},
+            },
+        )
+        assert item_response.status_code == 201
+
+        with patch("src.api.v1.canvas.get_storage_client", side_effect=RuntimeError("storage unavailable")):
+            snapshot_response = await client.get(
+                f"/api/v1/canvas-documents/{canvas_id}?mode=lite",
+                headers=auth_headers,
+            )
+
+        assert snapshot_response.status_code == 200
+        assert any(
+            item["id"] == item_response.json()["id"] for item in snapshot_response.json()["items"]
+        )
+
+    @pytest.mark.asyncio
+    async def test_create_image_with_empty_media_fields_does_not_initialize_storage(self, client, auth_headers):
+        create_response = await client.post(
+            "/api/v1/canvas-documents",
+            headers=auth_headers,
+            json={"title": "Empty image Canvas"},
+        )
+        canvas_id = create_response.json()["id"]
+
+        with patch("src.api.v1.canvas.get_storage_client", side_effect=RuntimeError("storage unavailable")):
+            item_response = await client.post(
+                f"/api/v1/canvas-documents/{canvas_id}/items",
+                headers=auth_headers,
+                json={
+                    "item_type": "image",
+                    "title": "Empty image",
+                    "position_x": 0,
+                    "position_y": 0,
+                    "width": 340,
+                    "height": 280,
+                    "z_index": 1,
+                    "content": {
+                        "prompt": "",
+                        "result_image_url": "",
+                        "reference_image_url": "",
+                        "style_reference_image_object_key": "",
+                        "promptTokens": [],
+                    },
+                    "generation_config": {},
+                },
+            )
+
+        assert item_response.status_code == 201
+
+    @pytest.mark.asyncio
     async def test_canvas_document_crud_and_graph_roundtrip(self, client, auth_headers):
         create_response = await client.post(
             "/api/v1/canvas-documents",

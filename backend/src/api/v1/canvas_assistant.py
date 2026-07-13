@@ -26,6 +26,7 @@ from src.services.canvas import CanvasGenerationService, CanvasService
 
 router = APIRouter()
 _redis_client = None
+_memory_session_store = InMemoryCanvasAssistantSessionStore()
 
 
 def _get_redis_client():
@@ -67,7 +68,7 @@ def get_canvas_assistant_service(db: AsyncSession = Depends(get_db)) -> CanvasAs
         workflow_service=workflow_service,
     )
     return CanvasAssistantService(
-        session_store=RedisCanvasAssistantSessionStore(redis_client) if redis_client is not None else InMemoryCanvasAssistantSessionStore(),
+        session_store=_memory_session_store if settings.DEBUG or redis_client is None else RedisCanvasAssistantSessionStore(redis_client),
         inspection_tools=inspection_tools,
         canvas_execution_tools=CanvasAssistantCanvasExecutionTools(canvas_service),
         generation_tools=generation_tools,

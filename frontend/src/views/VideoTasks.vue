@@ -48,11 +48,11 @@
     <!-- 过滤器 -->
     <div class="filter-bar">
       <el-radio-group v-model="filterStatus" @change="handleFilterChange">
-        <el-radio-button label="">全部</el-radio-button>
-        <el-radio-button label="pending">等待中</el-radio-button>
-        <el-radio-button label="processing">处理中</el-radio-button>
-        <el-radio-button label="completed">已完成</el-radio-button>
-        <el-radio-button label="failed">失败</el-radio-button>
+        <el-radio-button value="">全部</el-radio-button>
+        <el-radio-button value="pending">等待中</el-radio-button>
+        <el-radio-button value="processing">处理中</el-radio-button>
+        <el-radio-button value="completed">已完成</el-radio-button>
+        <el-radio-button value="failed">失败</el-radio-button>
       </el-radio-group>
       
       <div class="filter-right">

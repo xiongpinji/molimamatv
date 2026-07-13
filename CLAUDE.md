@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-AICG内容分发平台是一个AI驱动的长文本到视频自动转换系统，包含完整的前后端架构、用户管理系统、文件存储和异步任务处理功能。
+茉莉妈妈短剧工作台是一个AI驱动的短剧创作与内容分发平台，包含完整的前后端架构、用户管理系统、文件存储和异步任务处理功能。
 
 ## 开发环境设置
 

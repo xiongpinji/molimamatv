@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# AICG平台 - Docker镜像构建脚本
+# 茉莉妈妈短剧工作台 - Docker镜像构建脚本
 # ==========================================
 
 set -e  # 遇到错误立即退出
@@ -14,13 +14,13 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # 配置
-IMAGE_REGISTRY="${IMAGE_REGISTRY:-aicg}"
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-molimama}"
 VERSION="${VERSION:-latest}"
-BACKEND_IMAGE="${IMAGE_REGISTRY}/aicg-backend:${VERSION}"
-FRONTEND_IMAGE="${IMAGE_REGISTRY}/aicg-frontend:${VERSION}"
+BACKEND_IMAGE="${IMAGE_REGISTRY}/molimama-backend:${VERSION}"
+FRONTEND_IMAGE="${IMAGE_REGISTRY}/molimama-frontend:${VERSION}"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}AICG平台 - Docker镜像构建${NC}"
+echo -e "${BLUE}茉莉妈妈短剧工作台 - Docker镜像构建${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 

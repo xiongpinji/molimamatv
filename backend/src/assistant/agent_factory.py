@@ -204,14 +204,26 @@ def _normalize_messages(messages: list[BaseMessage]) -> list[dict[str, Any]]:
             role = "assistant"
         elif role == "tool":
             role = "tool"
-        normalized.append(
-            {
-                "role": role,
-                "content": getattr(message, "content", "") or "",
-                "tool_call_id": getattr(message, "tool_call_id", ""),
-                "name": getattr(message, "name", ""),
-            }
-        )
+        normalized_message = {
+            "role": role,
+            "content": getattr(message, "content", "") or "",
+            "tool_call_id": getattr(message, "tool_call_id", ""),
+            "name": getattr(message, "name", ""),
+        }
+        tool_calls = getattr(message, "tool_calls", None)
+        if role == "assistant" and tool_calls:
+            normalized_message["tool_calls"] = [
+                {
+                    "id": str(tool_call.get("id") or ""),
+                    "type": "function",
+                    "function": {
+                        "name": str(tool_call.get("name") or ""),
+                        "arguments": json.dumps(tool_call.get("args") or {}, ensure_ascii=False),
+                    },
+                }
+                for tool_call in tool_calls
+            ]
+        normalized.append(normalized_message)
     return normalized
 
 

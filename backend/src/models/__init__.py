@@ -22,6 +22,13 @@ from src.models.sentence import Sentence, SentenceStatus
 from src.models.user import User
 from src.models.movie import MovieCharacter, MovieScript, MovieScene, MovieShot, ScriptStatus
 from src.models.video_task import VideoTask, VideoTaskStatus
+from src.models.prompt_library import (
+    PromptCategory,
+    PromptTag,
+    UserPrompt,
+    UserPromptFavorite,
+    UserPromptTag,
+)
 
 __all__ = [
     "Base",
@@ -58,4 +65,9 @@ __all__ = [
     "MovieScene",
     "MovieShot",
     "ScriptStatus",
+    "PromptCategory",
+    "PromptTag",
+    "UserPrompt",
+    "UserPromptFavorite",
+    "UserPromptTag",
 ]

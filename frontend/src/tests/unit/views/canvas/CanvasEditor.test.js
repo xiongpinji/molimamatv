@@ -10,6 +10,15 @@ import CanvasEditor from '@/views/canvas/CanvasEditor.vue'
 import { useCanvasEditor } from '@/composables/useCanvasEditor'
 import { useCanvasGeneration } from '@/composables/useCanvasGeneration'
 
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useRoute: () => ({ params: { id: 'doc-1' } }),
+    useRouter: () => ({ push: vi.fn() })
+  }
+})
+
 vi.mock('@/composables/useCanvasEditor', () => ({
   useCanvasEditor: vi.fn(),
   default: vi.fn()
@@ -50,6 +59,7 @@ vi.mock('@/components/canvas/assistant/CanvasAssistant.vue', () => ({
 describe('CanvasEditor assistant wiring', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(ElMessageBox, 'confirm').mockResolvedValue('confirm')
   })
 
   it('passes the current document id to the assistant rail without editor selection coupling', async () => {
@@ -409,7 +419,6 @@ describe('CanvasEditor assistant wiring', () => {
 
   it('confirms before deleting all selected nodes with one batch request', async () => {
     const removeItems = vi.fn(async () => {})
-    ElMessageBox.confirm.mockResolvedValue('confirm')
 
     useCanvasEditor.mockReturnValue({
       loading: ref(false),
@@ -487,7 +496,6 @@ describe('CanvasEditor assistant wiring', () => {
 
   it('confirms before deleting a single node from the studio panel', async () => {
     const removeItems = vi.fn(async () => {})
-    ElMessageBox.confirm.mockResolvedValue('confirm')
     const selectedItem = ref({
       id: 'item-1',
       item_type: 'text',

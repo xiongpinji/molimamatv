@@ -88,6 +88,15 @@
 
       <div class="panel-toolbar">
         <div class="toolbar-left">
+          <el-tooltip content="提示词库" placement="top">
+            <el-button
+              class="prompt-library-btn"
+              :icon="Notebook"
+              circle
+              size="small"
+              @click="showPromptLibrary = true"
+            />
+          </el-tooltip>
           <el-select
             class="tool-select"
             :model-value="draft.apiKeyId"
@@ -212,6 +221,12 @@
         alt="canvas full preview"
       />
     </el-dialog>
+
+    <PromptLibraryDialog
+      v-model="showPromptLibrary"
+      use-case="text2img"
+      @select="handlePromptSelect"
+    />
   </div>
 </template>
 
@@ -223,10 +238,12 @@
     Picture,
     Plus,
     Top,
-    Upload
+    Upload,
+    Notebook
   } from '@element-plus/icons-vue'
   import CanvasGeneratingOverlay from '@/components/canvas/CanvasGeneratingOverlay.vue'
   import CanvasPromptMentionEditor from '@/components/canvas/CanvasPromptMentionEditor.vue'
+  import PromptLibraryDialog from '@/components/prompt-library/PromptLibraryDialog.vue'
   import { useCanvasStudioCommitBoundary } from '@/composables/useCanvasStudioCommitBoundary'
 
   const props = defineProps({
@@ -255,6 +272,7 @@
     'update:model-id',
     'update:title',
     'update:tokens',
+    'update:prompt',
     'upload',
     'upload-style-reference',
     'clear-style-reference'
@@ -266,6 +284,7 @@
   const styleReferenceInputRef = ref(null)
   const previewDialogVisible = ref(false)
   const pendingPreviewDrag = ref(null)
+  const showPromptLibrary = ref(false)
   const canSubmitPrompt = computed(
     () => String(props.draft.promptPlainText || '').trim().length > 0
   )
@@ -316,6 +335,10 @@
       return
     }
     previewDialogVisible.value = true
+  }
+
+  const handlePromptSelect = (prompt) => {
+    emit('update:prompt', prompt)
   }
 
   const handleHeaderPointerDown = (event) => {
@@ -684,6 +707,11 @@
     width: 100%;
     max-height: 80vh;
     object-fit: contain;
+  }
+
+  .prompt-library-btn {
+    margin-right: 8px;
+    flex-shrink: 0;
   }
 
   @media (max-width: 720px) {

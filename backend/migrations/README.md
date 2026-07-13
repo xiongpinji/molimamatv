@@ -1,6 +1,6 @@
 # Alembic数据库迁移
 
-这个目录包含AICG内容分发平台的数据库迁移文件。
+这个目录包含茉莉妈妈短剧工作台的数据库迁移文件。
 
 ## 概述
 
@@ -66,7 +66,7 @@ uv run alembic downgrade base
 
 1. **备份数据库**:
    ```bash
-   pg_dump -U aicg_user aicg_db > backup_$(date +%Y%m%d_%H%M%S).sql
+   pg_dump -U molimama_user molimama_db > backup_$(date +%Y%m%d_%H%M%S).sql
    ```
 
 2. **测试迁移文件**（可选）:
@@ -194,7 +194,7 @@ uv run alembic upgrade head
 
 ```bash
 # 连接到数据库
-psql -U aicg_user -d aicg_db
+psql -U molimama_user -d molimama_db
 
 # 手动执行SQL
 ```

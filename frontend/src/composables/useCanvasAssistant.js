@@ -158,6 +158,7 @@ export function useCanvasAssistant({
       return await turnRunner(abortController.value.signal)
     } catch (turnError) {
       runtimeError.value = turnError?.message || 'assistant request failed'
+      appendEvent({ kind: 'error', message: runtimeError.value })
       throw turnError
     } finally {
       abortController.value = null

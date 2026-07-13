@@ -1,5 +1,5 @@
 """
-AICG内容分发平台 - FastAPI应用入口
+茉莉妈妈短剧工作台 - FastAPI应用入口
 """
 
 import time
@@ -28,21 +28,12 @@ setup_logging()
 
 # 创建FastAPI应用实例
 app = FastAPI(
-    title="AICG内容分发平台",
-    description="AI驱动的长文本到视频自动转换系统",
+    title="茉莉妈妈短剧工作台",
+    description="AI驱动的短剧创作与内容分发平台",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    contact={
-        "name": "AICG Platform Team",
-        "url": "https://github.com/your-org/aicg-platform",
-        "email": "team@aicg-platform.com",
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://opensource.org/licenses/MIT",
-    },
 )
 
 # 添加CORS中间件
@@ -93,7 +84,7 @@ async def startup_event():
     import logging
     app_logger = logging.getLogger(__name__)
 
-    app_logger.info("🚀 AICG平台正在启动...")
+    app_logger.info("🚀 茉莉妈妈短剧工作台正在启动...")
     app_logger.info(f"📝 环境: {settings.ENVIRONMENT}")
     app_logger.info(f"🌐 调试模式: {settings.DEBUG}")
     app_logger.info(f"🔗 API地址: http://0.0.0.0:8000")
@@ -108,13 +99,13 @@ async def shutdown_event():
     """应用关闭事件"""
     import logging
     app_logger = logging.getLogger(__name__)
-    app_logger.info("🛑 AICG平台正在关闭...")
+    app_logger.info("🛑 茉莉妈妈短剧工作台正在关闭...")
     # 这里可以添加清理逻辑
 
 
 @app.exception_handler(AICGException)
 async def aicg_exception_handler(request: Request, exc: AICGException):
-    """AICG自定义异常处理"""
+    """自定义异常处理"""
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -146,7 +137,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 async def root():
     """根路径"""
     return {
-        "message": "欢迎使用AICG内容分发平台",
+        "message": "欢迎使用茉莉妈妈短剧工作台",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health",
@@ -157,7 +148,7 @@ async def root():
 async def app_info():
     """应用信息"""
     return {
-        "name": "AICG内容分发平台",
+        "name": "茉莉妈妈短剧工作台",
         "version": "1.0.0",
         "environment": settings.ENVIRONMENT,
         "debug": settings.DEBUG,

@@ -1,6 +1,6 @@
 """
-AICG内容分发平台 - 后端主模块
+茉莉妈妈短剧工作台 - 后端主模块
 """
 
 __version__ = "1.0.0"
-__author__ = "AICG Platform Team"
+__author__ = "茉莉妈妈团队"

@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 class AICGException(Exception):
-    """AICG平台基础异常类"""
+    """平台基础异常类"""
     def __init__(
         self,
         message: str,

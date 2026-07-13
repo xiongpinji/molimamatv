@@ -11,14 +11,12 @@
       <!-- Logo和标题 -->
       <div class="auth-header">
         <div class="logo">
-          <el-icon class="logo-icon">
-            <VideoCamera />
-          </el-icon>
-          <span class="logo-text">AICG</span>
+          <img src="/logo.png" alt="茉莉妈妈" class="logo-image" />
+          <span class="logo-text">茉莉妈妈短剧工作台</span>
         </div>
         <h1 class="auth-title">
           <span v-if="title">{{ title }}</span>
-          <span v-else>AI内容生成平台</span>
+          <span v-else>AI短剧创作平台</span>
         </h1>
         <p v-if="subtitle" class="auth-subtitle">{{ subtitle }}</p>
       </div>
@@ -44,7 +42,7 @@
           <a href="#" class="footer-link">帮助中心</a>
         </div>
         <div class="copyright">
-          © 2024 AICG Platform. All rights reserved.
+          © 2026 茉莉妈妈短剧工作台. All rights reserved.
         </div>
       </div>
     </div>
@@ -138,6 +136,14 @@ defineProps({
   justify-content: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-lg);
+}
+
+.logo-image {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
 }
 
 .logo-icon {

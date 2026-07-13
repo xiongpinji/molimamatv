@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # =============================================================================
     # 应用基础配置
     # =============================================================================
-    APP_NAME: str = "AICG Platform"
+    APP_NAME: str = "茉莉妈妈短剧工作台"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"

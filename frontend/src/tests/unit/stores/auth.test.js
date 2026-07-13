@@ -14,6 +14,9 @@ vi.mock('@/services/auth', () => ({
     getCurrentUser: vi.fn(),
     updateProfile: vi.fn(),
     changePassword: vi.fn(),
+    uploadAvatar: vi.fn(),
+    deleteAvatar: vi.fn(),
+    getUserStats: vi.fn(),
     logout: vi.fn()
   }
 }))
@@ -31,12 +34,12 @@ describe('auth store', () => {
   let authStore
 
   beforeEach(() => {
+    vi.clearAllMocks()
+    localStorageMock.getItem.mockReturnValue(null)
     const pinia = createPinia()
     setActivePinia(pinia)
     authStore = useAuthStore()
 
-    // 清除所有模拟调用记录
-    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -52,6 +55,7 @@ describe('auth store', () => {
       localStorageMock.getItem.mockReturnValue(testToken)
 
       // 重新创建store
+      setActivePinia(createPinia())
       const newAuthStore = useAuthStore()
 
       expect(newAuthStore.token).toBe(testToken)
@@ -168,6 +172,7 @@ describe('auth store', () => {
     it('应该成功获取用户信息', async () => {
       const { authService } = await import('@/services/auth')
       const mockUser = { id: '1', username: 'testuser' }
+      authStore.token = 'test-token'
       authService.getCurrentUser.mockResolvedValue(mockUser)
 
       await authStore.getCurrentUser()

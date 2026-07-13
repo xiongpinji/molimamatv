@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from src.assistant.agent_factory import CanvasAssistantAgentFactory, CanvasAssistantToolCallingChatModel, SYSTEM_PROMPT
 from src.services.api_key import APIKeyService
@@ -87,6 +88,18 @@ async def test_tool_calling_model_serializes_uuid_observation_summary() -> None:
     assert result.content == "ok"
     observation_payload = captured_messages["messages"][1]["content"]
     assert "UUID(" not in observation_payload
+
+
+def test_normalize_messages_preserves_assistant_tool_call_context() -> None:
+    from src.assistant.agent_factory import _normalize_messages
+    messages = [
+        HumanMessage(content="创建节点"),
+        AIMessage(content="", tool_calls=[{"id": "call-1", "name": "canvas_create_item", "args": {"title": "测试"}, "type": "tool_call"}]),
+        ToolMessage(content='{"ok":true}', tool_call_id="call-1", name="canvas_create_item"),
+    ]
+    normalized = _normalize_messages(messages)
+    assert normalized[1]["tool_calls"] == [{"id": "call-1", "type": "function", "function": {"name": "canvas_create_item", "arguments": '{"title": "测试"}'}}]
+    assert normalized[2]["tool_call_id"] == "call-1"
 
 
 @pytest.mark.asyncio

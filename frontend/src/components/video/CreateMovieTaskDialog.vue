@@ -53,9 +53,9 @@
 
       <el-form-item label="帧率" prop="gen_setting.fps">
         <el-radio-group v-model="form.gen_setting.fps">
-          <el-radio-button :label="24">24 FPS</el-radio-button>
-          <el-radio-button :label="30">30 FPS</el-radio-button>
-          <el-radio-button :label="60">60 FPS</el-radio-button>
+          <el-radio-button :value="24">24 FPS</el-radio-button>
+          <el-radio-button :value="30">30 FPS</el-radio-button>
+          <el-radio-button :value="60">60 FPS</el-radio-button>
         </el-radio-group>
       </el-form-item>
 

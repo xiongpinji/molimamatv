@@ -41,7 +41,7 @@ export function setupAuthGuard(router) {
   // 全局后置钩子
   router.afterEach((to, from) => {
     // 可以在这里添加页面访问日志、统计等
-    document.title = `${to.meta.title || 'AICG Platform'} - Content Distribution Platform`
+    document.title = `${to.meta.title || '茉莉妈妈短剧工作台'} - AI短剧创作平台`
   })
 }
 

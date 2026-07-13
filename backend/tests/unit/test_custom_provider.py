@@ -31,3 +31,20 @@ class TestCustomProvider:
             aspectRatio="9:16",
             reference_images=["uploads/reference.jpg"],
         )
+
+    @pytest.mark.asyncio
+    async def test_generate_image_maps_aspect_ratio_to_openai_size(self):
+        provider = CustomProvider(api_key="test-key", base_url="https://example.test/v1")
+        provider.client.images.generate = AsyncMock(return_value={"data": []})
+
+        await provider.generate_image(
+            prompt="粉色蝴蝶与茉莉花",
+            model="gpt-image-2",
+            aspect_ratio="16:9",
+        )
+
+        provider.client.images.generate.assert_awaited_once_with(
+            model="gpt-image-2",
+            prompt="粉色蝴蝶与茉莉花",
+            size="1536x1024",
+        )

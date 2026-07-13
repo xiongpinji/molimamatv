@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# AICG平台启动脚本 - 启动PostgreSQL、Redis、MinIO基础设施服务
+# 茉莉妈妈短剧工作台 - 启动脚本
+# 启动PostgreSQL、Redis、MinIO基础设施服务
 
 set -e
 

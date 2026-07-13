@@ -1,4 +1,5 @@
 import httpx
+import json
 from typing import List, Optional, Dict, Any
 from src.core.logging import get_logger
 from src.services.provider.base import log_provider_call
@@ -11,11 +12,12 @@ class VectorEngineProvider:
     专门用于视频生成任务
     """
 
-    def __init__(self, api_key: str, base_url: str = "https://api.vectorengine.ai/v1"):
+    def __init__(self, api_key: str, base_url: str = "https://api.vectorengine.ai/v1", open_api: bool = False):
         self.api_key = api_key
         self.base_url = base_url
+        self.open_api = open_api
         self.headers = {
-            "Authorization": f"Bearer {api_key}",
+            ("api-key" if open_api else "Authorization"): api_key if open_api else f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         self.timeout = httpx.Timeout(60.0, connect=20.0)
@@ -34,22 +36,30 @@ class VectorEngineProvider:
         """
         创建视频生成任务
         """
-        url = f"{self.base_url}/video/create"
-        payload = {
-            "prompt": prompt,
-            "images": images or [],
-            "model": model,
-            "aspect_ratio": aspect_ratio,
-            "enable_upsample": enable_upsample,
-            "enhance_prompt": enhance_prompt
-        }
-        payload.update(kwargs)
+        if self.open_api:
+            url = f"{self.base_url.removesuffix('/v1')}/api/v1/video-jobs"
+            extra_params = {"model": model, "aspect_ratio": aspect_ratio, "duration": kwargs.pop("duration", 5)}
+            payload = {"api_key": self.api_key, "prompt": prompt, "task_type": "video", "extra_params": json.dumps(extra_params, ensure_ascii=False)}
+            if images:
+                payload["image_url"] = images[0]
+            payload.update(kwargs)
+        else:
+            url = f"{self.base_url}/video/create"
+            payload = {
+                "prompt": prompt,
+                "images": images or [],
+                "model": model,
+                "aspect_ratio": aspect_ratio,
+                "enable_upsample": enable_upsample,
+                "enhance_prompt": enhance_prompt
+            }
+            payload.update(kwargs)
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
                 response = await client.post(url, headers=self.headers, json=payload)
                 response.raise_for_status()
-                return response.json()
+                return self._normalize_response(response.json())
             except httpx.HTTPStatusError as e:
                 logger.error(f"Vector Engine Create Failed: {e.response.text}")
                 raise
@@ -62,21 +72,28 @@ class VectorEngineProvider:
         """
         查询任务状态
         """
-        url = f"{self.base_url}/videos/{task_id}"
+        url = (f"{self.base_url.removesuffix('/v1')}/api/v1/video-jobs/{task_id}" if self.open_api else f"{self.base_url}/videos/{task_id}")
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
                 response = await client.get(url, headers=self.headers)
                 response.raise_for_status()
-                return response.json()
+                return self._normalize_response(response.json())
             except Exception as e:
                 logger.error(f"Vector Engine Query Status Failed: {e}")
                 raise
+
+    @staticmethod
+    def _normalize_response(payload: Dict[str, Any]) -> Dict[str, Any]:
+        detail = payload.get("data") if isinstance(payload, dict) else None
+        return {**payload, **detail} if isinstance(detail, dict) else payload
 
     @log_provider_call("get_video_content")
     async def get_video_content(self, task_id: str) -> Dict[str, Any]:
         """
         获取视频内容（包含下载链接）
         """
+        if self.open_api:
+            return await self.get_task_status(task_id)
         url = f"{self.base_url}/videos/{task_id}/content"
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:

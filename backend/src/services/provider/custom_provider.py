@@ -70,10 +70,20 @@ class CustomProvider(BaseLLMProvider):
             # 将 Gemini 响应包装成兼容格式
             return self._wrap_gemini_response(gemini_response)
 
+        image_kwargs = dict(kwargs)
+        if model and model.lower().startswith("gpt-image"):
+            aspect_ratio = str(image_kwargs.pop("aspect_ratio", "") or "").strip()
+            if aspect_ratio:
+                image_kwargs["size"] = {
+                    "1:1": "1024x1024",
+                    "16:9": "1536x1024",
+                    "9:16": "1024x1536",
+                }.get(aspect_ratio, "auto")
+
         # 用 semaphore 限制并发
         async with self.semaphore:
             return await self.client.images.generate(
-                model=model or "Kwai-Kolors/Kolors", prompt=prompt, **kwargs
+                model=model or "Kwai-Kolors/Kolors", prompt=prompt, **image_kwargs
             )
 
     @log_provider_call("generate_audio")

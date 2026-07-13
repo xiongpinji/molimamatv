@@ -853,6 +853,7 @@ class CanvasGenerationService(BaseService):
             provider = VectorEngineProvider(
                 api_key=api_key.get_api_key(),
                 base_url=api_key.base_url or "https://api.vectorengine.ai/v1",
+                open_api=api_key.provider.lower() == "custom",
             )
             options = request.get("options") or {}
             reference_images = options.get("reference_image_urls") or item.content_json.get("reference_image_urls") or []
@@ -862,14 +863,19 @@ class CanvasGenerationService(BaseService):
                 for key, value in options.items()
                 if key not in {"reference_image_urls", "reference_text_ids"}
             }
-            response = await provider.create_video(
-                prompt=request["prompt"],
-                images=provider_images,
-                model=request.get("model") or "veo_3_1-fast",
-                **provider_options,
-            )
+            previous_result = generation.result_payload_json or {}
+            provider_task_id = previous_result.get("provider_task_id")
+            if provider_task_id:
+                response = previous_result.get("provider_response") or {}
+            else:
+                response = await provider.create_video(
+                    prompt=request["prompt"],
+                    images=provider_images,
+                    model=request.get("model") or "veo_3_1-fast",
+                    **provider_options,
+                )
+                provider_task_id = response.get("id") or response.get("task_id")
 
-            provider_task_id = response.get("id") or response.get("task_id")
             direct_video_url = self._extract_video_url(response)
             if direct_video_url:
                 stored_video_asset = await self._store_remote_video(direct_video_url, str(generation.user_id))

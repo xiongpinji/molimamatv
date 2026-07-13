@@ -1,6 +1,7 @@
 version: '3.8'
 
-# AICG平台基础设施服务 - 仅包含PostgreSQL、Redis、MinIO
+# 茉莉妈妈短剧工作台 - 基础设施服务
+# 仅包含PostgreSQL、Redis、MinIO
 # 后端应用在本地运行，通过localhost访问这些服务
 
 services:

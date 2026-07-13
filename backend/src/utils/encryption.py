@@ -4,6 +4,7 @@ API密钥加密工具模块
 """
 
 import base64
+from pathlib import Path
 from typing import Optional
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -42,13 +43,18 @@ class EncryptionService:
         encryption_key = settings.API_KEY_ENCRYPTION_KEY
         
         if not encryption_key:
-            # 如果没有设置，生成一个新的密钥（仅用于开发环境）
+            # 开发环境持久化自动生成的密钥，避免服务重启后已有 API Key 无法解密。
+            key_file = Path(__file__).resolve().parents[2] / "data" / ".api_key_encryption_key"
+            key_file.parent.mkdir(parents=True, exist_ok=True)
+            if key_file.exists():
+                encryption_key = key_file.read_text(encoding="utf-8").strip()
+            else:
+                encryption_key = Fernet.generate_key().decode()
+                key_file.write_text(encryption_key, encoding="utf-8")
             logger.warning(
-                "API_KEY_ENCRYPTION_KEY 未设置，使用临时密钥。"
+                "API_KEY_ENCRYPTION_KEY 未设置，使用本地持久化开发密钥。"
                 "生产环境必须设置此环境变量！"
             )
-            encryption_key = Fernet.generate_key().decode()
-            logger.warning(f"临时加密密钥: {encryption_key}")
         
         try:
             # 确保密钥是字节格式

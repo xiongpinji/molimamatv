@@ -1,4 +1,7 @@
+import asyncio
 import inspect
+import logging
+import uuid
 from typing import Union
 
 from fastapi import APIRouter, Depends, File, Query, Response, UploadFile, status
@@ -31,7 +34,8 @@ from src.api.schemas.canvas import (
     CanvasVideoTaskResponse,
     CanvasVideoUploadResponse,
 )
-from src.core.database import get_db
+from src.core.config import settings
+from src.core.database import get_async_db, get_db
 from src.models.user import User
 from src.services.api_key import APIKeyService
 from src.services.canvas import (
@@ -42,11 +46,56 @@ from src.services.canvas import (
 from src.tasks.canvas import generate_canvas_image, generate_canvas_text, generate_canvas_video
 from src.utils.storage import get_storage_client
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
+_local_generation_tasks: set[asyncio.Task] = set()
+
+
+async def _run_local_generation(generation_type: str, generation_id: str) -> None:
+    async with get_async_db() as db:
+        service = CanvasGenerationService(db)
+        if generation_type == "image":
+            await service.process_image_generation(generation_id)
+        else:
+            await service.process_video_generation(generation_id)
+
+
+def _schedule_local_generation_task(generation_type: str, generation_id: str) -> None:
+    local_task = asyncio.create_task(_run_local_generation(generation_type, generation_id))
+    _local_generation_tasks.add(local_task)
+
+    def finalize(completed_task: asyncio.Task) -> None:
+        _local_generation_tasks.discard(completed_task)
+        try:
+            completed_task.result()
+        except Exception:
+            logger.exception("Local canvas generation task failed: %s", generation_id)
+
+    local_task.add_done_callback(finalize)
 
 
 async def resolve_canvas_media_fields(payload: dict) -> dict:
     content = dict(payload or {})
+    def has_media_reference(value) -> bool:
+        if isinstance(value, list):
+            return any(has_media_reference(entry) for entry in value)
+        if not isinstance(value, dict):
+            return False
+        for key, entry in value.items():
+            if (key.endswith("object_key") or key.endswith("ObjectKeySnapshot")) and str(entry or "").strip():
+                return True
+            if key == "nodePreviewUrlSnapshot" and extract_object_key_from_media_url(entry):
+                return True
+            if key == "resolvedContent" and isinstance(entry, dict):
+                if str(entry.get("objectKey") or entry.get("url") or "").strip():
+                    return True
+            if has_media_reference(entry):
+                return True
+        return False
+
+    if not has_media_reference(content):
+        return content
+
     storage_client = get_storage_client()
     if inspect.isawaitable(storage_client):
         storage_client = await storage_client
@@ -159,10 +208,16 @@ def dispatch_canvas_text_generation(generation_id: str) -> str:
 
 
 def dispatch_canvas_image_generation(generation_id: str) -> str:
+    if settings.DEBUG:
+        _schedule_local_generation_task("image", generation_id)
+        return f"local-{uuid.uuid4()}"
     return generate_canvas_image.delay(generation_id).id
 
 
 def dispatch_canvas_video_generation(generation_id: str) -> str:
+    if settings.DEBUG:
+        _schedule_local_generation_task("video", generation_id)
+        return f"local-{uuid.uuid4()}"
     return generate_canvas_video.delay(generation_id).id
 
 

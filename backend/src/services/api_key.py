@@ -334,23 +334,28 @@ class APIKeyService(BaseService):
                 logger.error(f"获取SiliconFlow模型异常: {e}")
                 return []
         
-        # Custom provider - 返回预定义模型列表
+        # Custom provider - 从配置的 OpenAI 兼容接口获取真实模型列表
         elif provider == 'custom':
-            if model_type == "image":
-                return ['gemini-3.1-flash-image-preview','gemini-3-pro-image-preview']
-            elif model_type == "audio":
-                return ['gpt-4o-mini-tts', 'tts-1']
-            elif model_type == "video":
-                return [
-                    'veo3.1',
-                    'veo3.1-components',
-                    'veo3.1-fast',
-                    'veo3.1-4k',
-                    'veo3.1-components-4k'
-                ]
-            else:  # text
-                return ['gemini-3.1-flash-lite-preview','gemini-3.1-pro-preview']
-        
+            import httpx
+
+            base_url = (api_key.base_url or "").rstrip("/")
+            if not base_url:
+                return []
+
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f"{base_url}/models",
+                        headers={"Authorization": f"Bearer {api_key.get_api_key()}"},
+                        timeout=15.0,
+                    )
+                response.raise_for_status()
+                models = response.json().get("data", [])
+                return [model["id"] for model in models if model.get("id")]
+            except Exception as e:
+                logger.error(f"获取自定义服务商模型异常: {e}")
+                return []
+
         # Other provider defaults
         elif provider == 'openai':
             if model_type == "image":

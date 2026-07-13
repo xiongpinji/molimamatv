@@ -4,10 +4,8 @@
     <div class="sidebar-header">
       <div class="logo-container">
         <div class="logo">
-          <el-icon class="logo-icon">
-            <VideoCamera />
-          </el-icon>
-          <span v-show="!collapsed" class="logo-text">AICG</span>
+          <img src="/logo.png" alt="茉莉妈妈" class="logo-image" />
+          <span v-show="!collapsed" class="logo-text">茉莉妈妈</span>
         </div>
         <button
           v-show="!collapsed"
@@ -85,7 +83,8 @@ import {
   Setting,
   Key,
   Headset,
-  Share
+  Share,
+  Collection
 } from '@element-plus/icons-vue'
 
 // Props
@@ -123,6 +122,12 @@ const menuItems = [
     title: '无限画布',
     path: '/canvas',
     icon: Share,
+    badge: null
+  },
+  {
+    title: '提示词库',
+    path: '/prompt-library',
+    icon: Collection,
     badge: null
   },
   {
@@ -217,6 +222,13 @@ const isActive = (path) => {
 
 .logo:hover {
   transform: scale(1.02);
+}
+
+.logo-image {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
 }
 
 .logo-icon {

@@ -54,7 +54,7 @@ const routes = [
         component: Register,
         props: {
           title: '创建账户',
-          subtitle: '加入AICG平台，开始您的AI内容创作之旅'
+          subtitle: '加入茉莉妈妈短剧工作台，开始您的AI短剧创作之旅'
         }
       }
     ]
@@ -217,6 +217,19 @@ const routes = [
         path: '',
         name: 'SettingsPage',
         component: Settings
+      }
+    ]
+  },
+  {
+    path: '/prompt-library',
+    name: 'PromptLibrary',
+    component: MainLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'PromptLibraryPage',
+        component: () => import('@/views/PromptLibrary.vue')
       }
     ]
   }
