@@ -47,11 +47,11 @@ const isAuthenticated = computed(() => authStore.isAuthenticated)
 
 const handleLogin = () => {
   const redirect = props.redirectTo || router.currentRoute.value.fullPath
-  router.push({ name: 'Login', query: { redirect } })
+  router.push({ name: 'LoginPage', query: { redirect } })
 }
 
 const handleRegister = () => {
-  router.push({ name: 'Register' })
+  router.push({ name: 'RegisterPage' })
 }
 
 onMounted(async () => {

@@ -66,7 +66,7 @@ api.interceptors.response.use(
           } else if (shouldForceLogoutOnUnauthorized(error)) {
             const authStore = useAuthStore()
             authStore.logout()
-            router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } })
+            router.push({ name: 'LoginPage', query: { redirect: router.currentRoute.value.fullPath } })
             ElMessage.error('登录已过期，请重新登录')
           } else {
             ElMessage.error(data.detail || '认证失败，请稍后重试')

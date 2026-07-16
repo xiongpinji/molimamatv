@@ -12,20 +12,20 @@ export function setupAuthGuard(router) {
       } catch (error) {
         console.error('获取用户信息失败:', error)
         authStore.logout()
-        next({ name: 'Login', query: { redirect: to.fullPath } })
+        next({ name: 'LoginPage', query: { redirect: to.fullPath } })
         return
       }
     }
 
     // 检查是否需要认证
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next({ name: 'Login', query: { redirect: to.fullPath } })
+      next({ name: 'LoginPage', query: { redirect: to.fullPath } })
       return
     }
 
     // 检查是否需要游客状态（已登录用户不能访问登录/注册页面）
     if (to.meta.requiresGuest && authStore.isAuthenticated) {
-      next({ name: 'Dashboard' })
+      next({ name: 'DashboardPage' })
       return
     }
 
